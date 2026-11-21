@@ -68,13 +68,14 @@
         .dropdown-item:hover { background: var(--hover-item); }
 
         /* Messages */
-        .chat-messages { flex: 1; background: var(--bg-body) url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png') repeat; padding: 12px 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
+        .chat-messages { flex: 1; background: var(--bg-body) url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png') repeat; padding: 12px 15px 12px 36px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
         
         .system-message { align-self: center; background: rgba(0,0,0,0.12); padding: 4px 12px; border-radius: 8px; font-size: 12px; color: var(--text-secondary); margin: 4px 0; text-align: center; }
 
-        .message { max-width: 80%; padding: 8px 12px 4px 12px; border-radius: 8px; position: relative; word-wrap: break-word; font-size: 15px; box-shadow: 0 1px 1px rgba(0,0,0,0.12); }
+        .message { max-width: 80%; padding: 8px 12px 4px 12px; border-radius: 8px; position: relative; word-wrap: break-word; font-size: 15px; box-shadow: 0 1px 1px rgba(0,0,0,0.12); user-select: none; -webkit-user-select: none; }
         .message.incoming { background: var(--bg-msg-in); align-self: flex-start; border-top-left-radius: 0; color: var(--text-primary); }
-        .message.outgoing { background: var(--bg-msg-out); align-self: flex-end; border-top-right-radius: 0; color: var(--text-primary); }
+        .message.outgoing { background: var(--bg-msg-out); align-self: flex-end; border-top-right-radius: 0; color: var(--text-primary); margin-right: 28px; }
+        .message.deleted-msg { font-style: italic; color: var(--text-secondary); opacity: 0.85; }
         .sender-name { font-size: 12px; font-weight: bold; color: #00a884; margin-bottom: 2px; cursor: pointer; }
         
         /* Quoted Reply Block inside Message */
@@ -86,8 +87,8 @@
         .tick-mark { font-size: 12px; }
 
         /* Action Buttons (Reply & + Reaction) */
-        .msg-actions { position: absolute; right: -54px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
-        .message.outgoing .msg-actions { right: auto; left: -54px; }
+        .msg-actions { position: absolute; right: -56px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
+        .message.outgoing .msg-actions { right: auto; left: -56px; }
         .action-circle-btn { background: var(--bg-msg-in); border: 1px solid var(--border-color); color: var(--text-secondary); cursor: pointer; font-size: 12px; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
         
         .reaction-picker { display: none; position: absolute; bottom: 100%; left: 0; background: var(--bg-msg-in); border: 1px solid var(--border-color); border-radius: 25px; padding: 5px 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 60; gap: 8px; align-items: center; margin-bottom: 5px; }
@@ -137,6 +138,10 @@
         .modal-buttons button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-cancel { background: var(--bg-header); color: var(--text-primary); }
         .btn-ok { background: #00a884; color: #fff; }
+        .btn-danger { background: #e53935; color: #fff; }
+
+        .delete-options { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+        .delete-option-btn { width: 100%; padding: 11px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
         .members-list { max-height: 200px; overflow-y: auto; text-align: left; margin-bottom: 15px; background: var(--bg-header); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); }
         .member-item { padding: 6px 0; border-bottom: 1px solid var(--border-color); font-size: 14px; display: flex; align-items: center; gap: 8px; }
@@ -206,9 +211,22 @@
             
             <button class="icon-action-btn" id="mic-btn" onclick="toggleVoiceRecording()" title="ऑडियो रिकॉर्ड करें"><i class="fa-solid fa-microphone" id="mic-icon"></i></button>
             
-            <textarea id="message-input" placeholder="पैराग్రాफ या संदेश लिखें..." rows="1" oninput="autoResize(this); handleTyping();"></textarea>
+            <textarea id="message-input" placeholder="पैराग्राफ या संदेश लिखें..." rows="1" oninput="autoResize(this); handleTyping();"></textarea>
             
             <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Double-Tap Delete Modal -->
+    <div class="modal" id="delete-modal">
+        <div class="modal-content">
+            <h3>मैसेज डिलीट करें</h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">यह विकल्प चुनें कि आप यह मैसेज कैसे हटाना चाहते हैं:</p>
+            <div class="delete-options">
+                <button class="delete-option-btn btn-cancel" onclick="confirmDeleteForMe()">अपने लिए डिलीट करें</button>
+                <button class="delete-option-btn btn-danger" id="delete-everyone-btn" style="display: none;" onclick="confirmDeleteForEveryone()">सभी के लिए डिलीट करें</button>
+                <button class="delete-option-btn btn-ok" onclick="closeDeleteModal()">रद्द करें</button>
+            </div>
         </div>
     </div>
 
@@ -266,6 +284,7 @@
         let audioChunks = [];
         let isRecording = false;
         let activeReply = null;
+        let selectedDeleteMsg = null;
 
         window.onload = function() {
             if (localStorage.getItem('chat_theme') === 'dark') {
@@ -323,7 +342,6 @@
         socket.on('recording', (name) => { document.getElementById('typing-indicator').innerText = `${name} ऑडियो रिकॉर्ड कर रहे हैं... 🎤`; });
         socket.on('stop-activity', () => { document.getElementById('typing-indicator').innerText = ''; });
 
-        // Reply Functions
         function setReply(sender, text) {
             activeReply = { sender, text };
             document.getElementById('reply-to-name').innerText = sender;
@@ -343,12 +361,12 @@
             if (!text) return;
 
             const msgData = {
-                id: 'msg_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                id: 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 name: myName,
                 type: 'text',
                 content: text,
                 replyTo: activeReply,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 reactions: {},
                 seenBy: [myName]
             };
@@ -390,13 +408,13 @@
                     else if (file.type.startsWith('audio/')) fileType = 'audio';
 
                     const msgData = {
-                        id: 'msg_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                        id: 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                         name: myName,
                         type: fileType,
                         content: e.target.result,
                         fileName: file.name,
                         replyTo: activeReply,
-                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         reactions: {},
                         seenBy: [myName]
                     };
@@ -411,21 +429,21 @@
         function toggleVoiceRecording() {
             const micIcon = document.getElementById('mic-icon');
             if (!isRecording) {
-                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
                     mediaRecorder = new MediaRecorder(stream);
                     audioChunks = [];
-                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
                     mediaRecorder.onstop = () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             const msgData = {
-                                id: 'msg_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                                id: 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                                 name: myName,
                                 type: 'audio',
                                 content: e.target.result,
                                 replyTo: activeReply,
-                                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                                 reactions: {},
                                 seenBy: [myName]
                             };
@@ -433,7 +451,7 @@
                             cancelReply();
                         };
                         reader.readAsDataURL(audioBlob);
-                        stream.getTracks().forEach(t => t.stop());
+                        stream.getTracks().forEach((t) => t.stop());
                         socket.emit('stop-activity');
                     };
                     mediaRecorder.start();
@@ -452,10 +470,29 @@
         socket.on('load-history', (history) => {
             const chatMessages = document.getElementById('chat-messages');
             chatMessages.innerHTML = '';
-            history.forEach(data => appendMessage(data));
+            history.forEach((data) => appendMessage(data));
         });
 
         socket.on('chat-message', (data) => appendMessage(data));
+
+        socket.on('message-deleted-everyone', ({ messageId, content }) => {
+            const msgEl = document.getElementById(messageId);
+            if (msgEl) {
+                const bodyEl = msgEl.querySelector('.msg-body-content');
+                const actionsEl = msgEl.querySelector('.msg-actions');
+                const reactionsEl = msgEl.querySelector('.msg-reactions');
+                const quotedEl = msgEl.querySelector('.quoted-box');
+
+                if (actionsEl) actionsEl.remove();
+                if (reactionsEl) reactionsEl.remove();
+                if (quotedEl) quotedEl.remove();
+                if (bodyEl) {
+                    bodyEl.className = 'msg-body-content deleted-msg';
+                    bodyEl.innerHTML = escapeHtml(content);
+                }
+                msgEl.dataset.isDeleted = 'true';
+            }
+        });
 
         socket.on('update-reaction', ({ messageId, reactions }) => {
             const msgEl = document.getElementById(messageId);
@@ -486,6 +523,57 @@
             document.getElementById('online-count-text').innerText = `${users.length} मेंबर्स ऑनलाइन`;
         });
 
+        // Double-Tap handler for messages
+        function attachDoubleTapDelete(msgDiv, messageId, senderName, isOutgoing) {
+            let lastTapTime = 0;
+
+            const triggerDeleteModal = () => {
+                if (msgDiv.dataset.isDeleted === 'true') return;
+                selectedDeleteMsg = { id: messageId, sender: senderName, isOutgoing };
+                const everyoneBtn = document.getElementById('delete-everyone-btn');
+                everyoneBtn.style.display = isOutgoing ? 'block' : 'none';
+                document.getElementById('delete-modal').style.display = 'flex';
+            };
+
+            msgDiv.addEventListener('dblclick', (e) => {
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('audio') || e.target.closest('video')) return;
+                triggerDeleteModal();
+            });
+
+            msgDiv.addEventListener('touchend', (e) => {
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('audio') || e.target.closest('video')) return;
+                const now = Date.now();
+                if (now - lastTapTime < 320 && now - lastTapTime > 0) {
+                    e.preventDefault();
+                    lastTapTime = 0;
+                    triggerDeleteModal();
+                } else {
+                    lastTapTime = now;
+                }
+            });
+        }
+
+        function confirmDeleteForMe() {
+            if (!selectedDeleteMsg) return;
+            const el = document.getElementById(selectedDeleteMsg.id);
+            if (el) el.remove();
+            closeDeleteModal();
+        }
+
+        function confirmDeleteForEveryone() {
+            if (!selectedDeleteMsg || !selectedDeleteMsg.isOutgoing) return;
+            socket.emit('delete-for-everyone', {
+                messageId: selectedDeleteMsg.id,
+                senderName: myName
+            });
+            closeDeleteModal();
+        }
+
+        function closeDeleteModal() {
+            selectedDeleteMsg = null;
+            document.getElementById('delete-modal').style.display = 'none';
+        }
+
         function appendMessage(data) {
             const chatMessages = document.getElementById('chat-messages');
             const msgDiv = document.createElement('div');
@@ -500,54 +588,59 @@
             }
 
             const isOutgoing = data.name === myName;
+            const isDeleted = data.type === 'deleted';
             msgDiv.className = `message ${isOutgoing ? 'outgoing' : 'incoming'}`;
             msgDiv.dataset.seenBy = JSON.stringify(data.seenBy || [data.name]);
+            msgDiv.dataset.isDeleted = isDeleted ? 'true' : 'false';
 
             let previewText = data.type === 'text' ? data.content : `[${data.type.toUpperCase()}]`;
-            let safePreview = previewText.replace(/'/g, "\\'").replace(/\n/g, " ");
+            let safePreview = previewText.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, " ");
+            let safeSender = data.name.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
-            let contentHTML = `<div class="sender-name" onclick="showMsgInfo('${data.id}')">${data.name} ℹ️</div>`;
+            let contentHTML = `<div class="sender-name" onclick="showMsgInfo('${data.id}')">${escapeHtml(data.name)} ℹ️</div>`;
             
-            // Quoted Reply if present
-            if (data.replyTo) {
+            if (!isDeleted && data.replyTo) {
                 contentHTML += `<div class="quoted-box">
                     <div class="quoted-sender">${escapeHtml(data.replyTo.sender)}</div>
                     <div>${escapeHtml(data.replyTo.text)}</div>
                 </div>`;
             }
 
-            // Action Buttons (Reply + Reaction)
-            contentHTML += `<div class="msg-actions">
-                <button class="action-circle-btn" onclick="setReply('${data.name}', '${safePreview}')" title="रिप्लाई करें"><i class="fa-solid fa-reply"></i></button>
-                <button class="action-circle-btn" onclick="toggleReactionPicker('${data.id}')" title="रिएक्शन दें"><i class="fa-solid fa-plus"></i></button>
-            </div>`;
+            if (!isDeleted) {
+                contentHTML += `<div class="msg-actions">
+                    <button class="action-circle-btn" onclick="setReply('${safeSender}', '${safePreview}')" title="रिप्लाई करें"><i class="fa-solid fa-reply"></i></button>
+                    <button class="action-circle-btn" onclick="toggleReactionPicker('${data.id}')" title="रिएक्शन दें"><i class="fa-solid fa-plus"></i></button>
+                </div>`;
 
-            contentHTML += `<div class="reaction-picker" id="picker_${data.id}">
-                <span onclick="sendReaction('${data.id}', '❤️')">❤️</span>
-                <span onclick="sendReaction('${data.id}', '😂')">😂</span>
-                <span onclick="sendReaction('${data.id}', '👍')">👍</span>
-                <span onclick="sendReaction('${data.id}', '😮')">😮</span>
-                <span onclick="sendReaction('${data.id}', '😢')">😢</span>
-                <span onclick="sendReaction('${data.id}', '🙏')">🙏</span>
-            </div>`;
-
-            if (data.type === 'text') {
-                contentHTML += `<div style="white-space: pre-wrap; word-break: break-word;">${escapeHtml(data.content)}</div>`;
-            } else if (data.type === 'image') {
-                contentHTML += `<img src="${data.content}" class="msg-img" onclick="openMediaModal('${data.content}')">`;
-            } else if (data.type === 'video') {
-                contentHTML += `<video src="${data.content}" class="msg-video" controls></video>`;
-            } else if (data.type === 'audio') {
-                contentHTML += `<div class="audio-wrapper"><i class="fa-solid fa-wave-square"></i><audio src="${data.content}" class="msg-audio" controls></audio></div>`;
-            } else {
-                contentHTML += `<div class="file-box">
-                    <i class="fa-solid fa-file-arrow-down"></i>
-                    <div style="flex:1; font-size:13px; word-break:break-all;">${data.fileName}</div>
-                    <a href="${data.content}" download="${data.fileName}" class="download-btn">डाउनलोड</a>
+                contentHTML += `<div class="reaction-picker" id="picker_${data.id}">
+                    <span onclick="sendReaction('${data.id}', '❤️')">❤️</span>
+                    <span onclick="sendReaction('${data.id}', '😂')">😂</span>
+                    <span onclick="sendReaction('${data.id}', '👍')">👍</span>
+                    <span onclick="sendReaction('${data.id}', '😮')">😮</span>
+                    <span onclick="sendReaction('${data.id}', '😢')">😢</span>
+                    <span onclick="sendReaction('${data.id}', '🙏')">🙏</span>
                 </div>`;
             }
 
-            if (data.reactions && Object.keys(data.reactions).length > 0) {
+            if (isDeleted) {
+                contentHTML += `<div class="msg-body-content deleted-msg">${escapeHtml(data.content)}</div>`;
+            } else if (data.type === 'text') {
+                contentHTML += `<div class="msg-body-content" style="white-space: pre-wrap; word-break: break-word;">${escapeHtml(data.content)}</div>`;
+            } else if (data.type === 'image') {
+                contentHTML += `<div class="msg-body-content"><img src="${data.content}" class="msg-img" onclick="openMediaModal('${data.content}')"></div>`;
+            } else if (data.type === 'video') {
+                contentHTML += `<div class="msg-body-content"><video src="${data.content}" class="msg-video" controls></video></div>`;
+            } else if (data.type === 'audio') {
+                contentHTML += `<div class="msg-body-content"><div class="audio-wrapper"><i class="fa-solid fa-wave-square"></i><audio src="${data.content}" class="msg-audio" controls></audio></div></div>`;
+            } else {
+                contentHTML += `<div class="msg-body-content"><div class="file-box">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    <div style="flex:1; font-size:13px; word-break:break-all;">${escapeHtml(data.fileName || 'File')}</div>
+                    <a href="${data.content}" download="${escapeHtml(data.fileName || 'file')}" class="download-btn">डाउनलोड</a>
+                </div></div>`;
+            }
+
+            if (!isDeleted && data.reactions && Object.keys(data.reactions).length > 0) {
                 contentHTML += `<div class="msg-reactions">`;
                 for (let u in data.reactions) contentHTML += `<span class="badge-reaction">${data.reactions[u]}</span>`;
                 contentHTML += `</div>`;
@@ -560,10 +653,11 @@
             </div>`;
 
             msgDiv.innerHTML = contentHTML;
+            attachDoubleTapDelete(msgDiv, data.id, data.name, isOutgoing);
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            if (!isOutgoing) socket.emit('mark-seen', { messageId: data.id, name: myName });
+            if (!isOutgoing && !isDeleted) socket.emit('mark-seen', { messageId: data.id, name: myName });
         }
 
         function showMsgInfo(msgId) {
@@ -572,7 +666,7 @@
             const seenBy = JSON.parse(msgEl.dataset.seenBy || '[]');
             const listBox = document.getElementById('info-list-box');
             listBox.innerHTML = '';
-            seenBy.forEach(user => {
+            seenBy.forEach((user) => {
                 listBox.innerHTML += `<div class="member-item"><i class="fa-solid fa-check-double" style="color:#53bdeb;"></i> ${escapeHtml(user)} ने देखा</div>`;
             });
             document.getElementById('info-modal').style.display = 'flex';
@@ -580,7 +674,7 @@
         function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
 
         function toggleReactionPicker(msgId) {
-            document.querySelectorAll('.reaction-picker').forEach(p => { if (p.id !== `picker_${msgId}`) p.classList.remove('active'); });
+            document.querySelectorAll('.reaction-picker').forEach((p) => { if (p.id !== `picker_${msgId}`) p.classList.remove('active'); });
             document.getElementById(`picker_${msgId}`).classList.toggle('active');
         }
 
@@ -595,7 +689,7 @@
             toggleMenu();
             const listBox = document.getElementById('members-list-box');
             listBox.innerHTML = '';
-            (currentOnlineUsers.length ? currentOnlineUsers : [myName]).forEach(u => {
+            (currentOnlineUsers.length ? currentOnlineUsers : [myName]).forEach((u) => {
                 listBox.innerHTML += `<div class="member-item"><i class="fa-solid fa-circle"></i> ${escapeHtml(u)}</div>`;
             });
             document.getElementById('members-modal').style.display = 'flex';
@@ -626,8 +720,8 @@
         function closeMediaModal() { document.getElementById('media-modal').style.display = 'none'; }
 
         function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return String(text || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         }
     </script>
 </body>
-              </html>
+    </html>
