@@ -1,7 +1,7 @@
 {
   "name": "whatsapp-clone-ultimate-pro",
-  "version": "3.0.0",
-  "description": "WhatsApp Clone with Quoted Reply, Recording Status, Theme Toggle, and Reactions",
+  "version": "3.1.0",
+  "description": "WhatsApp Clone with Double-Tap Delete, Quoted Reply, Reactions, Voice Notes, and 200MB Media",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
