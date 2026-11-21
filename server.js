@@ -19,12 +19,13 @@ io.on('connection', (socket) => {
         connectedUsers[socket.id] = name;
 
         const joinMsg = {
-            id: 'sys_' + Date.now() + Math.random(),
+            id: 'sys_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
             type: 'system',
             content: `${name} चैट में शामिल हो गए हैं।`,
-            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         messagesHistory.push(joinMsg);
+        if (messagesHistory.length > 250) messagesHistory.shift();
         io.emit('chat-message', joinMsg);
 
         socket.emit('update-group-name', groupName);
@@ -38,9 +39,29 @@ io.on('connection', (socket) => {
         io.emit('chat-message', data);
     });
 
+    // Delete message for everyone
+    socket.on('delete-for-everyone', ({ messageId, senderName }) => {
+        const msgIndex = messagesHistory.findIndex((m) => m.id === messageId);
+        if (msgIndex !== -1) {
+            if (messagesHistory[msgIndex].name === senderName) {
+                messagesHistory[msgIndex] = {
+                    ...messagesHistory[msgIndex],
+                    type: 'deleted',
+                    content: '🚫 यह संदेश डिलीट कर दिया गया है।',
+                    replyTo: null,
+                    reactions: {}
+                };
+                io.emit('message-deleted-everyone', {
+                    messageId,
+                    content: '🚫 यह संदेश डिलीट कर दिया गया है।'
+                });
+            }
+        }
+    });
+
     socket.on('mark-seen', ({ messageId, name }) => {
-        const msg = messagesHistory.find(m => m.id === messageId);
-        if (msg) {
+        const msg = messagesHistory.find((m) => m.id === messageId);
+        if (msg && msg.type !== 'system' && msg.type !== 'deleted') {
             if (!msg.seenBy) msg.seenBy = [];
             if (!msg.seenBy.includes(name)) {
                 msg.seenBy.push(name);
@@ -50,8 +71,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('add-reaction', ({ messageId, reaction, name }) => {
-        const msg = messagesHistory.find(m => m.id === messageId);
-        if (msg) {
+        const msg = messagesHistory.find((m) => m.id === messageId);
+        if (msg && msg.type !== 'system' && msg.type !== 'deleted') {
             if (!msg.reactions) msg.reactions = {};
             if (msg.reactions[name] === reaction) {
                 delete msg.reactions[name];
@@ -82,12 +103,13 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         if (socket.username) {
             const leaveMsg = {
-                id: 'sys_' + Date.now() + Math.random(),
+                id: 'sys_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 type: 'system',
                 content: `${socket.username} ने चैट छोड़ दी है।`,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             messagesHistory.push(leaveMsg);
+            if (messagesHistory.length > 250) messagesHistory.shift();
             io.emit('chat-message', leaveMsg);
         }
         delete connectedUsers[socket.id];
